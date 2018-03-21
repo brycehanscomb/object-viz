@@ -1,0 +1,11 @@
+{
+  "name": "scene-viz",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@types/fabric": "^1.5.31",
+    "fabric": "^2.2.2",
+    "lodash": "^4.17.5"
+  }
+}

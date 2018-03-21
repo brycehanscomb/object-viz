@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="./index.js" async defer></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        main {
+            display: flex;
+        }
+
+        #stage {
+            outline: 1px solid black;
+            flex-shrink: 0;
+        }
+
+        .images {
+            padding-left: 2rem;
+            display: grid;
+            grid-template-columns: repeat(2, auto);
+            grid-gap: 10px;
+            flex-shrink: 1;
+        }
+
+        .image {
+            height: auto;
+            width: 100%;
+            transform: rotate(180deg);
+            cursor: crosshair;
+        }
+
+        .image.selected {
+            outline: 4px solid red;
+        }
+
+        .image:nth-of-type(1).selected {
+            outline-color: red;
+        }
+        .image:nth-of-type(2).selected {
+            outline-color: blue;
+        }
+        .image:nth-of-type(3).selected {
+            outline-color: green;
+        }
+        .image:nth-of-type(4).selected {
+            outline-color: orange;
+        }
+
+    </style>
+</head>
+<body>
+    <main>
+        <div>
+            <canvas id="stage" width="500" height="500"></canvas>
+            <p>
+                Mode:
+                <label>
+                    <input type="radio" name="mode" value="camera">
+                    Place Camera
+                </label>
+                <label>
+                    <input type="radio" name="mode" value="object">
+                    Place Object
+                </label>
+            </p>
+            <p>
+                <input type="checkbox" checked><input type="checkbox" checked>
+                <br>
+                <input type="checkbox" checked><input type="checkbox" checked>
+            </p>
+        </div>
+        <div class="images">
+            <img src="./images/IMG_0001.JPG" class="image">
+            <img src="./images/IMG_0002.JPG" class="image">
+            <img src="./images/IMG_0003.JPG" class="image">
+            <img src="./images/IMG_0004.JPG" class="image">
+        </div>
+    </main>
+</body>
+</html>
