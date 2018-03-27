@@ -15,7 +15,11 @@ const colors = [
     '#FF0000',
     '#0000FF',
     '#00FF00',
-    '#FFA500'
+    '#FFA500',
+    '#3D9970',
+    '#B10DC9',
+    '#111111',
+    '#85144b'
 ];
 
 const canvas = new fabric.Canvas('stage', {
@@ -74,30 +78,54 @@ class Camera {
 }
 
 const sampleCameras = [
-    // [images[0], new Camera({
-    //     position: [100, 100],
-    //     viewLeft: [0, 80],
-    //     viewRight: [80, 0],
-    //     active: true
-    // })],
-    // [images[1], new Camera({
-    //     position: [0, 0],
-    //     viewLeft: [100, 15],
-    //     viewRight: [30, 100],
-    //     active: true
-    // })],
-    // [images[2], new Camera({
-    //     position: [100, 0],
-    //     viewLeft: [100, 20],
-    //     viewRight: [0, 75],
-    //     active: true
-    // })],
-    // [images[3], new Camera({
-    //     position: [0, 100],
-    //     viewLeft: [25, 0],
-    //     viewRight: [100, 65],
-    //     active: true
-    // })]
+    [images[0], new Camera({
+        position: [0, 80],
+        viewLeft: [58, 2],
+        viewRight: [18, 100],
+        active: true
+    })],
+    [images[1], new Camera({
+        position: [0, 50],
+        viewLeft: [36, 0],
+        viewRight: [28, 100],
+        active: true
+    })],
+    [images[2], new Camera({
+        position: [36, 0],
+        viewLeft: [0, 43],
+        viewRight: [0, 0],
+        active: true
+    })],
+    [images[3], new Camera({
+        position: [61, 0],
+        viewLeft: [66, 99],
+        viewRight: [16, 99],
+        active: true
+    })],
+    [images[4], new Camera({
+        position: [49, 40],
+        viewLeft: [0, 19],
+        viewRight: [66, 24],
+        active: true
+    })],
+    [images[5], new Camera({
+        position: [48.4, 44.9],
+        viewLeft: [100, 100],
+        viewRight: [38, 60.7],
+        active: true
+    })],
+    [images[6], new Camera({
+        position: [52.2, 100],
+        viewLeft: [99.5, 53],
+        viewRight: [99.5, 95],
+        active: true
+    })],
+    [images[7], new Camera({
+        position: [73, 100],
+        viewLeft: [0, 20],
+        viewRight: [100, 80],
+        active: true
+    })]
 ];
 
 function setMode(newMode) {
@@ -145,7 +173,7 @@ function drawCameraView(cam, color) {
                 xpx(x(cam.position)), ypx(y(cam.position)),
             ],
             {
-                stroke: `${color}66`,
+                stroke: `${color}AA`,
                 strokeDashArray: [5,5],
                 selectable: false
             }

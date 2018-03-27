@@ -46,6 +46,18 @@ main {
 .image:nth-of-type(4).selected {
     outline-color: orange;
 }
+.image:nth-of-type(5).selected {
+    outline-color: #3D9970;
+}
+.image:nth-of-type(6).selected {
+    outline-color: #B10DC9;
+}
+.image:nth-of-type(7).selected {
+    outline-color: #111111;
+}
+.image:nth-of-type(8).selected {
+    outline-color: #85144b;
+}
 
 .stage-size-container {
     display: grid;
