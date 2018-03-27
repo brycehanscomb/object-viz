@@ -415,15 +415,23 @@ function onCanvasClicked(options) {
  * @param {Array<Camera>} cameras
  * @returns {?Camera}
  */
-function findClosestCamera(point, cameras) {
+function findClosestCamera(point, cameras, precision = 15) {
     const plausibleTargets = cameras.filter(cam => {
         return (
-            isCloseTo(x(point), x(cam.position), 15) &&
-            isCloseTo(y(point), y(cam.position), 15)
+            isCloseTo(x(point), x(cam.position), precision) &&
+            isCloseTo(y(point), y(cam.position), precision)
         );
     });
 
-    return plausibleTargets[0];
+    if (plausibleTargets.length === 1) {
+        return plausibleTargets[0];
+    }
+
+    if (plausibleTargets.length === 0) {
+        return null;
+    }
+
+    return findClosestCamera(point, cameras, precision / 2);
 }
 
 function render() {
