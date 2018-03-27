@@ -240,8 +240,8 @@ function drawCameraObject(cam, color) {
 
     canvas.add(
         new fabric.Circle({
-            left: xpx(x(position) - (baseSize / 2)),
-            top: ypx(y(position) - (baseSize / 2)),
+            left: xpx(x(position)) - baseSize,
+            top: ypx(y(position)) - baseSize,
             radius: baseSize,
             fill: `${color}66`,
             strokeWidth: 2,
