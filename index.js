@@ -42,7 +42,9 @@ let state = {
 };
 
 class Camera {
-    constructor({ position, viewLeft, viewRight, active }) {
+
+
+    constructor({ position, viewLeft, viewRight, active, direction }) {
         /**
          * @type {Array.<number>}
          */
@@ -151,9 +153,26 @@ function isCloseTo(target, approx, tolerance) {
 /**
  * @param {Camera} cam
  * @param {string} color
+ * @param {boolean} isHighlighted
  */
-function drawCameraView(cam, color) {
+function drawCameraView(cam, color, isHighlighted) {
     const camViewCenter = getPointAlongCamView(50, cam);
+    const dashes = [5,5];
+    const strokeColor = `${color}AA`;
+
+    let options = {
+        stroke: strokeColor,
+        strokeDashArray: dashes,
+        selectable: false
+    };
+
+    if (isHighlighted) {
+        options = {
+            stroke: color,
+            strokeWidth: 2,
+            selectable: false
+        };
+    }
 
     canvas.add(
         new fabric.Line(
@@ -162,21 +181,24 @@ function drawCameraView(cam, color) {
                 xpx(x(cam.viewRight)), ypx(y(cam.viewRight)),
             ],
             {
-                stroke: color,
-                strokeWidth: 2,
+                stroke: `${color}AA`,
+                strokeWidth: 1,
                 selectable: false
             }
         ),
         new fabric.Line(
             [
-                xpx(x(camViewCenter)), ypx(y(camViewCenter)),
+                xpx(x(cam.viewLeft)), ypx(y(cam.viewLeft)),
                 xpx(x(cam.position)), ypx(y(cam.position)),
             ],
-            {
-                stroke: `${color}AA`,
-                strokeDashArray: [5,5],
-                selectable: false
-            }
+            options
+        ),
+        new fabric.Line(
+            [
+                xpx(x(cam.viewRight)), ypx(y(cam.viewRight)),
+                xpx(x(cam.position)), ypx(y(cam.position)),
+            ],
+            options
         )
     );
 }
@@ -212,7 +234,7 @@ function drawCameraObject(cam, color) {
         return;
     }
 
-    const baseSize = 10;
+    const baseSize = 5;
 
     const position = getPointAlongCamView(cam.getObjectX(), cam);
 
@@ -286,8 +308,8 @@ function getPointAlongCamView(percentAlongCamView, camera) {
 function drawCameras(cameras) {
     cameras.forEach((cam, index) => {
         const color = colors[index];
-        drawCameraBase(cam, `${color}AA`);
-        drawCameraView(cam, color);
+        drawCameraBase(cam, color);
+        drawCameraView(cam, color, state.selectedImage === index);
         drawCameraObject(cam, color);
     })
 }
@@ -334,6 +356,18 @@ function styleImages() {
     images[state.selectedImage].classList.add('selected');
 }
 
+function getCameraIndex(cam) {
+    let index = -1;
+
+    Array.from(state.imageCameraMap.values()).forEach((c, i) => {
+        if (c === cam) {
+            index = i;
+        }
+    });
+
+    return index;
+}
+
 function onCanvasClicked(options) {
     const clickedPoint = [
         xpc(options.e.layerX),
@@ -343,30 +377,34 @@ function onCanvasClicked(options) {
     if (state.mode === 'camera') {
         const target = findClosestCamera(clickedPoint, Array.from(state.imageCameraMap.values()));
 
-        const viewLeft = window.prompt(
-            'Where is the left boundary (X%, Y%) of this camera\'s view?',
-            target
-                ? JSON.stringify(target.viewLeft)
-                : '[40, 0]'
-        );
+        if (target) {
+            state.selectedImage = getCameraIndex(target);
+        }
 
-        const viewRight = window.prompt(
-            'Where is the right boundary (X%, Y%) of this camera\'s view?',
-            target
-                ? JSON.stringify(target.viewRight)
-                : '[60, 100]'
-        );
-
-        state.imageCameraMap.set(images[state.selectedImage], new Camera({
-            position: clickedPoint,
-            viewLeft: !!viewLeft
-                ? JSON.parse(viewLeft)
-                : [40, 0],
-            viewRight: !!viewRight
-                ? JSON.parse(viewRight)
-                : [60, 100],
-            active: true
-        }));
+        // const viewLeft = window.prompt(
+        //     'Where is the left boundary (X%, Y%) of this camera\'s view?',
+        //     target
+        //         ? JSON.stringify(target.viewLeft)
+        //         : '[40, 0]'
+        // );
+        //
+        // const viewRight = window.prompt(
+        //     'Where is the right boundary (X%, Y%) of this camera\'s view?',
+        //     target
+        //         ? JSON.stringify(target.viewRight)
+        //         : '[60, 100]'
+        // );
+        //
+        // state.imageCameraMap.set(images[state.selectedImage], new Camera({
+        //     position: clickedPoint,
+        //     viewLeft: !!viewLeft
+        //         ? JSON.parse(viewLeft)
+        //         : [40, 0],
+        //     viewRight: !!viewRight
+        //         ? JSON.parse(viewRight)
+        //         : [60, 100],
+        //     active: true
+        // }));
     }
 
     render();
@@ -414,7 +452,7 @@ function init() {
         el.addEventListener('click', onCheckboxClicked);
     });
 
-    window.addEventListener('mousemove', syncCursor);
+    // window.addEventListener('mousemove', syncCursor);
 
     canvas.on('mouse:down', onCanvasClicked);
 
