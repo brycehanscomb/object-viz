@@ -3,59 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <script src="./index.js" async defer></script>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        main {
-            display: flex;
-        }
-
-        #stage {
-            outline: 1px solid black;
-            flex-shrink: 0;
-        }
-
-        .images {
-            padding-left: 2rem;
-            display: grid;
-            grid-template-columns: repeat(2, auto);
-            grid-gap: 10px;
-            flex-shrink: 1;
-        }
-
-        .image {
-            height: auto;
-            width: 100%;
-            transform: rotate(180deg);
-            cursor: crosshair;
-        }
-
-        .image.selected {
-            outline: 4px solid red;
-        }
-
-        .image:nth-of-type(1).selected {
-            outline-color: red;
-        }
-        .image:nth-of-type(2).selected {
-            outline-color: blue;
-        }
-        .image:nth-of-type(3).selected {
-            outline-color: green;
-        }
-        .image:nth-of-type(4).selected {
-            outline-color: orange;
-        }
-
-    </style>
+    <link rel="stylesheet" href="style.scss">
 </head>
 <body>
     <main>
-        <div>
-            <canvas id="stage" width="500" height="500"></canvas>
+        <div class="wrapper">
+            <div class="stage-size-container">
+                <img src="images/floorplan.png" alt="" id="floorplan" width="500" height="461">
+                <canvas id="stage"></canvas>
+                <div id="cursor">
+                    <span class="x">50</span>,<span class="y">50</span>
+                </div>
+            </div>
             <p>
                 Mode:
                 <label>
@@ -74,11 +33,16 @@
             </p>
         </div>
         <div class="images">
-            <img src="./images/IMG_0001.JPG" class="image">
-            <img src="./images/IMG_0002.JPG" class="image">
-            <img src="./images/IMG_0003.JPG" class="image">
-            <img src="./images/IMG_0004.JPG" class="image">
+            <img src="./images/Camera1.jpg" class="image">
+            <img src="./images/Camera2.jpg" class="image">
+            <img src="./images/Camera3.jpg" class="image">
+            <img src="./images/Camera4.jpg" class="image">
+            <img src="./images/Camera5.jpg" class="image">
+            <img src="./images/Camera6.jpg" class="image">
+            <img src="./images/Camera7.jpg" class="image">
+            <img src="./images/Camera8.jpg" class="image">
         </div>
     </main>
+    <script src="./index.js" async defer></script>
 </body>
 </html>

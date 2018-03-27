@@ -1,4 +1,14 @@
-const bounds = document.getElementById('stage').getBoundingClientRect();
+export const $ = (s, parent = document) => parent.querySelector(s);
+export const $$ = (s) => [...document.querySelectorAll(s)].filter(Boolean);
+
+const floorPlanSource = $('#floorplan');
+const floorImageSize = floorPlanSource.getBoundingClientRect();
+
+const stage = $('#stage');
+stage.width = floorImageSize.width;
+stage.height = floorImageSize.height;
+
+const bounds = stage.getBoundingClientRect();
 
 /**
  * @param {number} percent

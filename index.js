@@ -1,11 +1,14 @@
 import { fabric } from 'fabric';
-import { xpc, xpx, ypc, ypx, pc, x, y } from './measures';
+import { xpc, xpx, ypc, ypx, pc, x, y, $, $$ } from './measures';
 import { inRange } from 'lodash';
 
-const $ = (s) => document.querySelector(s);
-const $$ = (s) => [...document.querySelectorAll(s)].filter(Boolean);
+const floorPlanSource = $('#floorplan');
+const floorImageSize = floorPlanSource.getBoundingClientRect();
 
 const stage = $('#stage');
+stage.width = floorImageSize.width;
+stage.height = floorImageSize.height;
+
 const bounds = stage.getBoundingClientRect();
 
 const colors = [
@@ -23,6 +26,7 @@ const canvas = new fabric.Canvas('stage', {
 const modeButtons = $$('input[name="mode"]');
 const images = $$('.image');
 const checkBoxes = $$('input[type="checkbox"]');
+const cursor = $('#cursor');
 
 /**
  * @type {{mode: string, selectedImage: number, imageCameraMap: Map<HTMLImageElement, Camera>}}
@@ -154,7 +158,7 @@ function drawCameraView(cam, color) {
  * @param {string} color
  */
 function drawCameraBase(cam, color) {
-    const baseSize = 20;
+    const baseSize = 10;
 
     canvas.add(
         new fabric.Rect({
@@ -254,7 +258,7 @@ function getPointAlongCamView(percentAlongCamView, camera) {
 function drawCameras(cameras) {
     cameras.forEach((cam, index) => {
         const color = colors[index];
-        drawCameraBase(cam, color);
+        drawCameraBase(cam, `${color}AA`);
         drawCameraView(cam, color);
         drawCameraObject(cam, color);
     })
@@ -357,7 +361,7 @@ function findClosestCamera(point, cameras) {
 }
 
 function render() {
-    canvas.clear();
+    clearStage();
 
     const cams = Array.from(state.imageCameraMap.values());
 
@@ -365,29 +369,54 @@ function render() {
     drawCameras(cams.filter(cam => cam.active));
 }
 
+function clearStage() {
+    canvas.clear();
+}
+
+function init() {
+    modeButtons.forEach(el => {
+        el.addEventListener('change', onModeChanged);
+    });
+
+    images.forEach(el => {
+        el.addEventListener('click', onImageClicked);
+    });
+
+    checkBoxes.forEach(el => {
+        el.addEventListener('click', onCheckboxClicked);
+    });
+
+    window.addEventListener('mousemove', syncCursor);
+
+    canvas.on('mouse:down', onCanvasClicked);
+
+    setMode(state.mode);
+
+    sampleCameras.forEach(([key, val]) => {
+        state.imageCameraMap.set(key, val);
+    });
+
+    window.canvas = canvas;
+    window.state = state;
+
+    return Promise.resolve();
+}
+
+/**
+ * @param {MouseEvent} e
+ */
+function syncCursor(e) {
+    const x = e.layerX;
+    const y = e.layerY;
+
+    const style = `translate3d(${e.clientX + 10}px, ${e.clientY + 10}px, 0px)`;
+
+    cursor.style.transform = style;
+
+    $('.x', cursor).innerText = Math.min(xpc(x), 100).toFixed(1) + '%';
+    $('.y', cursor).innerText = Math.min(ypc(y), 100).toFixed(1) + '%';
+}
+
 // -------------------------------------------------------- //
 
-modeButtons.forEach(el => {
-    el.addEventListener('change', onModeChanged);
-});
-
-images.forEach(el => {
-    el.addEventListener('click', onImageClicked);
-});
-
-checkBoxes.forEach(el => {
-    el.addEventListener('click', onCheckboxClicked);
-});
-
-canvas.on('mouse:down', onCanvasClicked);
-
-setMode(state.mode);
-
-sampleCameras.forEach(([key, val]) => {
-    state.imageCameraMap.set(key, val);
-});
-
-render();
-
-window.canvas = canvas;
-window.state = state;
+init().then(render);
