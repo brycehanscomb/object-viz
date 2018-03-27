@@ -282,24 +282,36 @@ function getPointAlongCamView(percentAlongCamView, camera) {
     const xSize = largestX - smallestX;
     const ySize = largestY - smallestY;
 
-    const viewVerticalDirection = y(camera.viewLeft) >= y(camera.viewRight) ? (
-        'up'
-    ) : (
-        'down'
-    );
+    const viewVerticalDirection = y(camera.viewLeft) >= y(camera.viewRight)
+        ? 'up'
+        : 'down';
+
+    const viewHorizontalDirection = x(camera.viewLeft) >= x(camera.viewRight)
+        ? 'right'
+        : 'left';
+
+    let X;
+    let Y;
 
     switch (viewVerticalDirection) {
         case 'down':
-            return [
-                smallestX + pc(percentAlongCamView, xSize),
-                smallestY + pc(percentAlongCamView, ySize),
-            ];
+            Y = smallestY + pc(percentAlongCamView, ySize);
+            break;
         case 'up':
-            return [
-                smallestX + pc(percentAlongCamView, xSize),
-                largestY - pc(percentAlongCamView, ySize),
-            ];
+            Y = largestY - pc(percentAlongCamView, ySize);
+            break;
     }
+
+    switch (viewHorizontalDirection) {
+        case 'left':
+            X = smallestX + pc(percentAlongCamView, xSize);
+            break;
+        case 'right':
+            X = largestX - pc(percentAlongCamView, xSize);
+            break;
+    }
+
+    return [X,Y];
 }
 
 /**
