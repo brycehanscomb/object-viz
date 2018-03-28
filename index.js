@@ -593,7 +593,7 @@ function onSliderChanged(e) {
 
 function init() {
     $('.logit').addEventListener('click', () => {
-        console.log(Array.from(state.imageCameraMap.values()));
+        console.log(getCurrentCamera().corrections);
     });
 
     modeButtons.forEach(el => {
