@@ -1,9 +1,10 @@
 import { fabric } from 'fabric';
 import { xpc, xpx, ypc, ypx, pc, x, y, $, $$, getAngle, tanDeg } from './measures';
-import { inRange } from 'lodash';
+import { inRange, throttle } from 'lodash';
 import Camera from './camera';
 import BezierEasing from 'bezier-easing';
 import {realAngle} from "./measures.js";
+import cameraData from './camera-data.js';
 
 const floorPlanSource = $('#floorplan');
 const floorImageSize = floorPlanSource.getBoundingClientRect();
@@ -32,66 +33,69 @@ const canvas = new fabric.Canvas('stage', {
 
 const modeButtons = $$('input[name="mode"]');
 const images = $$('.image');
+
+images.forEach(img => {
+    $('.checkbox-container').appendChild(createCheckbox());
+});
+
 const checkBoxes = $$('input[type="checkbox"]');
 const cursor = $('#cursor');
+const slider = $('.slider');
+
+function createCheckbox() {
+    const el = document.createElement('input');
+    el.type = 'checkbox';
+    return el;
+}
 
 /**
- * @type {{mode: string, selectedImage: number, imageCameraMap: Map<HTMLImageElement, Camera>}}
+ * @type {{mode: string, selectedImage: number, selectedCorrection: number, imageCameraMap: Map<HTMLImageElement, Camera>}}
  */
 let state = {
     mode: 'camera',
-    selectedImage: 5,
+    selectedImage: 0,
+    selectedCorrection: 0,
     imageCameraMap: new Map()
 };
 
 const sampleCameras = [
-    [images[0], new Camera({
-        position: [0, 80],
-        viewLeft: [58, 2],
-        viewRight: [18, 100],
-        active: false
-    })],
-    [images[1], new Camera({
-        position: [0, 50],
-        viewLeft: [36, 0],
-        viewRight: [28, 100],
-        active: false
-    })],
+    [images[0], new Camera(cameraData[0])],
+    [images[1], new Camera(cameraData[1])],
     [images[2], new Camera({
         position: [36, 0],
         viewLeft: [0, 43],
         viewRight: [0, 0],
-        active: false
+        active: true
     })],
     [images[3], new Camera({
         position: [61, 0],
         viewLeft: [66, 99],
         viewRight: [16, 99],
-        active: false
+        active: true
     })],
     [images[4], new Camera({
         position: [49, 40],
         viewLeft: [0, 19],
         viewRight: [66, 24],
-        active: false
+        active: true
     })],
     [images[5], new Camera({
         position: [48.4, 44.9],
         viewLeft: [100, 100],
-        viewRight: [38, 60.7],
+        viewRight: [9, 100],
         active: true
     })],
     [images[6], new Camera({
         position: [52.2, 100],
         viewLeft: [99.5, 53],
         viewRight: [99.5, 95],
-        active: false
+        active: true
     })],
     [images[7], new Camera({
         position: [73, 100],
         viewLeft: [0, 20],
         viewRight: [100, 80],
-        active: false
+        active: true
     })]
 ];
 
@@ -195,23 +199,23 @@ function drawCameraView(cam, color, isHighlighted) {
         };
     }
 
-    console.log([
-        `M ${xpx(x(cam.viewLeft))} ${ypx(y(cam.viewLeft))}`, // start here
-        `Q ${xpx(x(cam.position))}, ${ypx(y(cam.position))}`, // gravity well here
-        `${xpx(x(cam.viewRight))}, ${ypx(y(cam.viewRight))}` // finish here
-    ].join(' '));
-
-    const line = new fabric.Path(
-        [
-            `M ${xpx(x(cam.viewLeft))} ${ypx(y(cam.viewLeft))}`, // start here
-            `Q ${xpx(x(cam.position))}, ${ypx(y(cam.position))}`, // gravity well here
-            `${xpx(x(cam.viewRight))}, ${ypx(y(cam.viewRight))}` // finish here
-        ].join(' ')
-        , { fill: '', stroke: 'black', objectCaching: false });
+    // console.log([
+    //     `M ${xpx(x(cam.viewLeft))} ${ypx(y(cam.viewLeft))}`, // start here
+    //     `Q ${xpx(x(cam.position))}, ${ypx(y(cam.position))}`, // gravity well here
+    //     `${xpx(x(cam.viewRight))}, ${ypx(y(cam.viewRight))}` // finish here
+    // ].join(' '));
+    //
+    // const line = new fabric.Path(
+    //     [
+    //         `M ${xpx(x(cam.viewLeft))} ${ypx(y(cam.viewLeft))}`, // start here
+    //         `Q ${xpx(x(cam.position))}, ${ypx(y(cam.position))}`, // gravity well here
+    //         `${xpx(x(cam.viewRight))}, ${ypx(y(cam.viewRight))}` // finish here
+    //     ].join(' ')
+    //     , { fill: '', stroke: 'black', objectCaching: false });
 
 
     canvas.add(
-        line,
+        // line,
         new fabric.Line(
             [
                 xpx(x(cam.viewLeft)), ypx(y(cam.viewLeft)),
@@ -294,9 +298,10 @@ function drawCameraObject(cam, color) {
         new fabric.Text(
             `${cam.getObjectX()}`,
             {
-                fontSize: 25,
+                fontSize: 20,
                 left: xpx(x(planeIntersectionPosition)) - baseSize,
                 top: ypx(y(planeIntersectionPosition)) - baseSize,
+                selectable: false
             }
         ),
         new fabric.Line( // inside ray
@@ -339,9 +344,6 @@ function getPointAlongCamView(percentAlongCamView, camera) {
         y(camera.viewRight)
     );
 
-    const curve = BezierEasing( 0.00, 0.66, 0.00, 0.66);
-    percentAlongCamView = curve(percentAlongCamView / 100) * 100;
-
     const xSize = largestX - smallestX;
     const ySize = largestY - smallestY;
 
@@ -383,15 +385,70 @@ function getPointAlongCamView(percentAlongCamView, camera) {
 function drawCameras(cameras) {
     cameras.forEach((cam, index) => {
         const color = colors[index];
+        const isCurrent = state.selectedImage === index;
         drawCameraBase(cam, color);
-        drawCameraView(cam, color, state.selectedImage === index);
-        drawCameraObject(cam, color);
+        drawCameraView(cam, color, isCurrent);
+        // drawCameraObject(cam, color);
+
+        if (isCurrent && state.mode === 'object') {
+            cam.corrections.forEach(correction => {
+                drawCameraCorrection(color, cam, correction)
+            });
+        }
     })
+}
+
+/**
+ * @param {string} color
+ * @param {Camera} cam
+ * @param {PlaneCorrection} correction
+ */
+function drawCameraCorrection(color, cam, correction) {
+    const baseSize = 3;
+
+    const planeIntersectionPosition = getPointAlongCamView(correction.actualPosition, cam);
+    const insideRayStart = cam.position;
+    const insideRayEnd = planeIntersectionPosition;
+
+    canvas.add(
+        new fabric.Circle({
+            left: xpx(x(planeIntersectionPosition)) - baseSize,
+            top: ypx(y(planeIntersectionPosition)) - baseSize,
+            radius: baseSize,
+            fill: color,
+            stroke: color,
+            strokeWidth: 1,
+            selectable: false
+        }),
+        new fabric.Line( // inside ray
+            [
+                xpx(x(insideRayStart)), ypx(y(insideRayStart)),
+                xpx(x(insideRayEnd)), ypx(y(insideRayEnd)),
+            ],
+            {
+                stroke: `${color}AA`,
+                strokeWidth: 1,
+                selectable: false,
+                strokeDashArray: [2,2]
+            }
+        )
+    );
 }
 
 function onModeChanged(e) {
     setMode(e.target.value);
+
     state.mode = e.target.value;
+
+    if (state.mode === 'object') {
+        // $('#cursor').removeAttribute('hidden');
+        // window.addEventListener('mousemove', syncCursor);
+    } else {
+        // $('#cursor').setAttribute('hidden', true);
+        // window.removeEventListener('mousemove', syncCursor);
+    }
+
+    render();
 }
 
 /**
@@ -405,13 +462,14 @@ function onImageClicked(e) {
         const bounds = img.getBoundingClientRect();
 
         const clickedPoint = [
-            100 - ((e.layerX / bounds.width) * 100),
-            100 - ((e.layerY / bounds.height) * 100)
+            ((e.layerX / bounds.width) * 100),
+            ((e.layerY / bounds.height) * 100)
         ];
 
         const cam = state.imageCameraMap.get(img);
-
-        cam.setObjectX(x(clickedPoint));
+        cam.addCorrection(x(clickedPoint), x(clickedPoint));
+        slider.value = x(clickedPoint);
+        state.selectedCorrection = cam.corrections.length - 1;
     }
 
     render();
@@ -427,8 +485,27 @@ function onCheckboxClicked(e) {
 }
 
 function styleImages() {
-    images.forEach(i => i.className = 'image');
-    images[state.selectedImage].classList.add('selected');
+    images.forEach(i => i.parentElement.className = 'image-container');
+    images[state.selectedImage].parentElement.classList.add('selected');
+    $$('.x-guy').forEach(node => node.remove());
+
+    if (state.mode === 'object') {
+
+        const container = images[state.selectedImage].parentElement;
+        const corrections = state.imageCameraMap.get(images[state.selectedImage]).corrections;
+
+        corrections.forEach(correction => {
+            container.appendChild(createXGuy(correction.apparentPosition + '%'))
+            // create an x-guy and move him to apparentPositionX%
+        })
+    }
+}
+
+function createXGuy(xPosition = '50%') {
+    const el = document.createElement('span');
+    el.classList.add('x-guy');
+    el.style.left = xPosition;
+    return el;
 }
 
 function getCameraIndex(cam) {
@@ -441,6 +518,19 @@ function getCameraIndex(cam) {
     });
 
     return index;
+}
+
+/**
+ * @return {Camera | undefined}
+ */
+function getCurrentCamera() {
+    return state.imageCameraMap.get(
+        getImageForCamera(state.selectedImage)
+    );
+}
+
+function getImageForCamera(camNumber) {
+    return [...state.imageCameraMap.keys()][camNumber];
 }
 
 function onCanvasClicked(options) {
@@ -509,20 +599,33 @@ function findClosestCamera(point, cameras, precision = 15) {
     return findClosestCamera(point, cameras, precision / 2);
 }
 
-function render() {
+const render = throttle(() => {
     clearStage();
 
     const cams = Array.from(state.imageCameraMap.values());
 
     styleImages();
     drawCameras(cams.filter(cam => cam.active));
-}
+}, 1000 / 24);
 
 function clearStage() {
     canvas.clear();
 }
 
+function onSliderChanged(e) {
+    const value = parseFloat(e.target.value);
+
+    const cam = getCurrentCamera();
+    cam.changeCorrection(state.selectedCorrection, value);
+
+    render();
+}
+
 function init() {
+    $('.logit').addEventListener('click', () => {
+        console.log(Array.from(state.imageCameraMap.values()));
+    });
+
     modeButtons.forEach(el => {
         el.addEventListener('change', onModeChanged);
     });
@@ -535,14 +638,19 @@ function init() {
         el.addEventListener('click', onCheckboxClicked);
     });
 
-    window.addEventListener('mousemove', syncCursor);
-
+    slider.addEventListener('input', onSliderChanged);
     canvas.on('mouse:down', onCanvasClicked);
 
     setMode(state.mode);
 
     sampleCameras.forEach(([key, val]) => {
         state.imageCameraMap.set(key, val);
+    });
+
+    checkBoxes.forEach((el, index) => {
+        if (state.imageCameraMap.get(getImageForCamera(index)).active) {
+            el.checked = true;
+        }
     });
 
     window.canvas = canvas;
@@ -568,7 +676,7 @@ function syncCursor(e) {
 
 // -------------------------------------------------------- //
 
-init().then(render)
+init().then(render);
     /*
     .then(() => {
     const firstCam = state.imageCameraMap.get(images[state.selectedImage]);
