@@ -2,6 +2,7 @@ import { fabric } from 'fabric';
 import { xpc, xpx, ypc, ypx, pc, x, y, $, $$ } from './measures';
 import { inRange } from 'lodash';
 import Camera from './camera';
+import BezierEasing from 'bezier-easing';
 
 const floorPlanSource = $('#floorplan');
 const floorImageSize = floorPlanSource.getBoundingClientRect();
@@ -38,7 +39,7 @@ const cursor = $('#cursor');
  */
 let state = {
     mode: 'camera',
-    selectedImage: 0,
+    selectedImage: 5,
     imageCameraMap: new Map()
 };
 
@@ -47,31 +48,31 @@ const sampleCameras = [
         position: [0, 80],
         viewLeft: [58, 2],
         viewRight: [18, 100],
-        active: true
+        active: false
     })],
     [images[1], new Camera({
         position: [0, 50],
         viewLeft: [36, 0],
         viewRight: [28, 100],
-        active: true
+        active: false
     })],
     [images[2], new Camera({
         position: [36, 0],
         viewLeft: [0, 43],
         viewRight: [0, 0],
-        active: true
+        active: false
     })],
     [images[3], new Camera({
         position: [61, 0],
         viewLeft: [66, 99],
         viewRight: [16, 99],
-        active: true
+        active: false
     })],
     [images[4], new Camera({
         position: [49, 40],
         viewLeft: [0, 19],
         viewRight: [66, 24],
-        active: true
+        active: false
     })],
     [images[5], new Camera({
         position: [48.4, 44.9],
@@ -83,13 +84,13 @@ const sampleCameras = [
         position: [52.2, 100],
         viewLeft: [99.5, 53],
         viewRight: [99.5, 95],
-        active: true
+        active: false
     })],
     [images[7], new Camera({
         position: [73, 100],
         viewLeft: [0, 20],
         viewRight: [100, 80],
-        active: true
+        active: false
     })]
 ];
 
@@ -287,6 +288,14 @@ function drawCameraObject(cam, color) {
                 strokeDashArray: [2,2]
             }
         ),
+        new fabric.Text(
+            `${cam.getObjectX()}`,
+            {
+                top: xpx(x(position)),
+                left: ypx(y(position)),
+                fontSize: 25
+            }
+        ),
         new fabric.Line(
             [
                 xpx(x(rayStart)), ypx(y(rayStart)),
@@ -326,6 +335,11 @@ function getPointAlongCamView(percentAlongCamView, camera) {
         y(camera.viewLeft),
         y(camera.viewRight)
     );
+
+    // percentAlongCamView
+    const curve = BezierEasing( 0.00, 0.66, 0.00, 0.66);
+
+    percentAlongCamView = curve(percentAlongCamView / 100) * 100;
 
     const xSize = largestX - smallestX;
     const ySize = largestY - smallestY;
@@ -553,15 +567,18 @@ function syncCursor(e) {
 
 // -------------------------------------------------------- //
 
-init().then(render)/*.then(() => {
-    const firstCam = state.imageCameraMap.get(images[0]);
+init().then(render)
+    // /*
+    .then(() => {
+    const firstCam = state.imageCameraMap.get(images[state.selectedImage]);
 
     window.xxx = setInterval(() => {
         if (firstCam.getObjectX() > 99) {
-            clearInterval(window.xxx);
+            firstCam.setObjectX(0);
             return;
         }
-        firstCam.setObjectX(firstCam.getObjectX() + 1);
+        firstCam.setObjectX(firstCam.getObjectX() + 1.5);
         render();
-    }, 100);
-});*/
+    }, 150);
+});
+// */

@@ -5,6 +5,7 @@
   "license": "MIT",
   "dependencies": {
     "@types/fabric": "^1.5.31",
+    "bezier-easing": "^2.0.3",
     "eases": "^1.0.8",
     "fabric": "^2.2.2",
     "lodash": "^4.17.5"
