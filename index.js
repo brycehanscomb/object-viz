@@ -61,42 +61,12 @@ let state = {
 const sampleCameras = [
     [images[0], new Camera(cameraData[0])],
     [images[1], new Camera(cameraData[1])],
-    [images[2], new Camera({
-        position: [36, 0],
-        viewLeft: [0, 43],
-        viewRight: [0, 0],
-        active: true
-    })],
-    [images[3], new Camera({
-        position: [61, 0],
-        viewLeft: [66, 99],
-        viewRight: [16, 99],
-        active: true
-    })],
-    [images[4], new Camera({
-        position: [49, 40],
-        viewLeft: [0, 19],
-        viewRight: [66, 24],
-        active: true
-    })],
-    [images[5], new Camera({
-        position: [48.4, 44.9],
-        viewLeft: [100, 100],
-        viewRight: [9, 100],
-        active: true
-    })],
-    [images[6], new Camera({
-        position: [52.2, 100],
-        viewLeft: [99.5, 53],
-        viewRight: [99.5, 95],
-        active: true
-    })],
-    [images[7], new Camera({
-        position: [73, 100],
-        viewLeft: [0, 20],
-        viewRight: [100, 80],
-        active: true
-    })]
+    [images[2], new Camera(cameraData[2])],
+    [images[3], new Camera(cameraData[3])],
+    [images[4], new Camera(cameraData[4])],
+    [images[5], new Camera(cameraData[5])],
+    [images[6], new Camera(cameraData[6])],
+    [images[7], new Camera(cameraData[7])]
 ];
 
 function setMode(newMode) {
