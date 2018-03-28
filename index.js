@@ -1,8 +1,9 @@
 import { fabric } from 'fabric';
-import { xpc, xpx, ypc, ypx, pc, x, y, $, $$ } from './measures';
+import { xpc, xpx, ypc, ypx, pc, x, y, $, $$, getAngle, tanDeg } from './measures';
 import { inRange } from 'lodash';
 import Camera from './camera';
 import BezierEasing from 'bezier-easing';
+import {realAngle} from "./measures.js";
 
 const floorPlanSource = $('#floorplan');
 const floorImageSize = floorPlanSource.getBoundingClientRect();
@@ -104,6 +105,23 @@ function setMode(newMode) {
     })
 }
 
+function getQuadraticCurve(startPoint, endPoint, controlPoint) {
+    function x(tuple) { return tuple[0];}
+    function y(tuple) { return tuple[1];}
+
+    const relativeEndPoint = [
+        (x(endPoint) - x(startPoint)),
+        (y(endPoint) - y(startPoint))
+    ];
+
+    const relativeControlPoint = [
+        (x(controlPoint) - x(startPoint)),
+        (y(controlPoint) - y(startPoint))
+    ];
+
+    return [...relativeControlPoint, ...relativeEndPoint];
+}
+
 /**
  * @param {number} target
  * @param {number} approx
@@ -115,12 +133,51 @@ function isCloseTo(target, approx, tolerance) {
 }
 
 /**
+ * @typedef {Array<number>} Point
+ */
+
+/**
+ * @param {Point} startPoint
+ * @param {Point} endPoint
+ * @param {Point} controlPoint
+ * returns {[number, number]}
+ */
+function quadraticBezierToEasing(startPoint, endPoint, controlPoint) {
+    const absoluteS = startPoint;
+    const absoluteE = endPoint;
+    const absoluteC = controlPoint;
+
+    function x(tuple) { return tuple[0]; }
+    function y(tuple) { return tuple[1]; }
+    function lerp(val, max, min) { return (val - min) / (max - min); }
+
+    const relativeS = [
+        x(absoluteS) - x(absoluteS),
+        y(absoluteS) - y(absoluteS)
+    ];
+    const relativeE = [
+        x(absoluteE) - x(absoluteS),
+        y(absoluteE) - y(absoluteS),
+    ];
+    const relativeC = [
+        x(absoluteC) - x(absoluteS),
+        y(absoluteC) - y(absoluteS),
+    ];
+
+    const lerpedC = [
+        lerp(x(relativeC), x(relativeE), x(relativeS)),
+        lerp(y(relativeC), y(relativeE), y(relativeS))
+    ];
+
+    return lerpedC;
+}
+
+/**
  * @param {Camera} cam
  * @param {string} color
  * @param {boolean} isHighlighted
  */
 function drawCameraView(cam, color, isHighlighted) {
-    const camViewCenter = getPointAlongCamView(50, cam);
     const dashes = [5,5];
     const strokeColor = `${color}AA`;
 
@@ -138,7 +195,23 @@ function drawCameraView(cam, color, isHighlighted) {
         };
     }
 
+    console.log([
+        `M ${xpx(x(cam.viewLeft))} ${ypx(y(cam.viewLeft))}`, // start here
+        `Q ${xpx(x(cam.position))}, ${ypx(y(cam.position))}`, // gravity well here
+        `${xpx(x(cam.viewRight))}, ${ypx(y(cam.viewRight))}` // finish here
+    ].join(' '));
+
+    const line = new fabric.Path(
+        [
+            `M ${xpx(x(cam.viewLeft))} ${ypx(y(cam.viewLeft))}`, // start here
+            `Q ${xpx(x(cam.position))}, ${ypx(y(cam.position))}`, // gravity well here
+            `${xpx(x(cam.viewRight))}, ${ypx(y(cam.viewRight))}` // finish here
+        ].join(' ')
+        , { fill: '', stroke: 'black', objectCaching: false });
+
+
     canvas.add(
+        line,
         new fabric.Line(
             [
                 xpx(x(cam.viewLeft)), ypx(y(cam.viewLeft)),
@@ -190,57 +263,6 @@ function drawCameraBase(cam, color) {
 }
 
 /**
- *
- * @param {Array<number>} startPoint
- * @param {Array<number>} endPoint
- * @return {number} - in degrees
- */
-function getAngle(startPoint, endPoint) {
-    const smallestX = Math.min(
-        x(startPoint),
-        x(endPoint)
-    );
-
-    const largestX = Math.max(
-        x(startPoint),
-        x(endPoint)
-    );
-
-    const smallestY = Math.min(
-        y(startPoint),
-        y(endPoint)
-    );
-
-    const largestY = Math.max(
-        y(startPoint),
-        y(endPoint)
-    );
-
-    return Math.atan2(
-        largestY - smallestY, largestX - smallestX
-    ) * 180 / Math.PI;
-}
-
-// according to Math.atan2, 0 degrees is east. We want 0 degrees to be North on the circle
-function realAngle(x) {
-    let rotated = x + 90;
-    if (rotated >= 360) {
-        return rotated - 360;
-    }
-
-    return rotated;
-}
-
-/**
- * Math.tan is not in degrees
- * @param deg
- */
-function tanDeg(deg) {
-    const rad = deg * Math.PI/180;
-    return Math.tan(rad);
-}
-
-/**
  * @param {Camera} cam
  * @param {string} color
  */
@@ -251,22 +273,15 @@ function drawCameraObject(cam, color) {
 
     const baseSize = 5;
 
-    const position = getPointAlongCamView(cam.getObjectX(), cam);
+    const planeIntersectionPosition = getPointAlongCamView(cam.getObjectX(), cam);
 
-    const lineStart = cam.position;
-    const lineEnd = position;
-
-    const angle = getAngle(lineStart, lineEnd);
-    const ADJ = 100 - x(position);
-    const OPP = ADJ * tanDeg(angle);
-
-    const rayStart = lineEnd;
-    const rayEnd = [100, y(lineEnd) - OPP];
+    const insideRayStart = cam.position;
+    const insideRayEnd = planeIntersectionPosition;
 
     canvas.add(
         new fabric.Circle({
-            left: xpx(x(position)) - baseSize,
-            top: ypx(y(position)) - baseSize,
+            left: xpx(x(planeIntersectionPosition)) - baseSize,
+            top: ypx(y(planeIntersectionPosition)) - baseSize,
             radius: baseSize,
             fill: `${color}66`,
             strokeWidth: 2,
@@ -276,36 +291,24 @@ function drawCameraObject(cam, color) {
                 cameraPart: 'object'
             }
         }),
-        new fabric.Line(
+        new fabric.Text(
+            `${cam.getObjectX()}`,
+            {
+                fontSize: 25,
+                left: xpx(x(planeIntersectionPosition)) - baseSize,
+                top: ypx(y(planeIntersectionPosition)) - baseSize,
+            }
+        ),
+        new fabric.Line( // inside ray
             [
-                xpx(x(lineStart)), ypx(y(lineStart)),
-                xpx(x(lineEnd)), ypx(y(lineEnd)),
+                xpx(x(insideRayStart)), ypx(y(insideRayStart)),
+                xpx(x(insideRayEnd)), ypx(y(insideRayEnd)),
             ],
             {
                 stroke: `${color}AA`,
                 strokeWidth: 1,
                 selectable: false,
                 strokeDashArray: [2,2]
-            }
-        ),
-        new fabric.Text(
-            `${cam.getObjectX()}`,
-            {
-                top: xpx(x(position)),
-                left: ypx(y(position)),
-                fontSize: 25
-            }
-        ),
-        new fabric.Line(
-            [
-                xpx(x(rayStart)), ypx(y(rayStart)),
-                xpx(x(rayEnd)), ypx(y(rayEnd)),
-            ],
-            {
-                stroke: `${color}AA`,
-                strokeWidth: 1,
-                selectable: false,
-                strokeDashArray: [2,8]
             }
         )
     );
@@ -336,9 +339,7 @@ function getPointAlongCamView(percentAlongCamView, camera) {
         y(camera.viewRight)
     );
 
-    // percentAlongCamView
     const curve = BezierEasing( 0.00, 0.66, 0.00, 0.66);
-
     percentAlongCamView = curve(percentAlongCamView / 100) * 100;
 
     const xSize = largestX - smallestX;
@@ -534,7 +535,7 @@ function init() {
         el.addEventListener('click', onCheckboxClicked);
     });
 
-    // window.addEventListener('mousemove', syncCursor);
+    window.addEventListener('mousemove', syncCursor);
 
     canvas.on('mouse:down', onCanvasClicked);
 
@@ -568,7 +569,7 @@ function syncCursor(e) {
 // -------------------------------------------------------- //
 
 init().then(render)
-    // /*
+    /*
     .then(() => {
     const firstCam = state.imageCameraMap.get(images[state.selectedImage]);
 
