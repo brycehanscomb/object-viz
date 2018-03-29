@@ -336,13 +336,10 @@ function onModeChanged(e) {
  */
 function onImageClicked(e) {
     const img = e.target;
-    console.log(img);
     state.selectedImage = images.indexOf(img);
 
     if (state.mode === 'object') {
         const bounds = img.getBoundingClientRect();
-        console.log(bounds, e);
-
         const clickedPoint = [
             ((e.layerX / bounds.width) * 100),
             ((e.layerY / bounds.height) * 100)
@@ -512,7 +509,7 @@ function onSliderChanged(e) {
 
 function init() {
     $('.logit').addEventListener('click', () => {
-        console.log(getCurrentCamera().corrections);
+        console.log(JSON.stringify(getCurrentCamera().corrections));
     });
 
     modeButtons.forEach(el => {
