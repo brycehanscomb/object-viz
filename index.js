@@ -36,13 +36,14 @@ images.forEach(img => {
     $('.checkbox-container').appendChild(createCheckbox());
 });
 
-const checkBoxes = $$('input[type="checkbox"]');
+const checkBoxes = $$('.camera-checkbox');
 const cursor = $('#cursor');
 const slider = $('.slider');
 
 function createCheckbox() {
     const el = document.createElement('input');
     el.type = 'checkbox';
+    el.className = 'camera-checkbox';
     return el;
 }
 
@@ -405,17 +406,7 @@ function drawCameraCorrection(color, cam, correction) {
 
 function onModeChanged(e) {
     setMode(e.target.value);
-
     state.mode = e.target.value;
-
-    if (state.mode === 'object') {
-        // $('#cursor').removeAttribute('hidden');
-        // window.addEventListener('mousemove', syncCursor);
-    } else {
-        // $('#cursor').setAttribute('hidden', true);
-        // window.removeEventListener('mousemove', syncCursor);
-    }
-
     render();
 }
 
@@ -608,6 +599,18 @@ function init() {
 
     slider.addEventListener('input', onSliderChanged);
     canvas.on('mouse:down', onCanvasClicked);
+
+    $('.cursor-toggle').addEventListener('change', (e) => {
+        const checked = String(e.target.checked) === 'true';
+
+        if (checked) {
+            $('#cursor').removeAttribute('hidden');
+            window.addEventListener('mousemove', syncCursor);
+        } else {
+            $('#cursor').setAttribute('hidden', true);
+            window.removeEventListener('mousemove', syncCursor);
+        }
+    });
 
     setMode(state.mode);
 
