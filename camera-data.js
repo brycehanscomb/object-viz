@@ -79,7 +79,7 @@ export default [
     },
     {
         position: [61, 0],
-        viewLeft: [66, 99],
+        viewLeft: [67, 3],
         viewRight: [16, 99],
         active: true
     },
