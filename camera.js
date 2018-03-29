@@ -45,6 +45,10 @@ export default class Camera {
         )
     }
 
+    removeCorrection(index) {
+        return this.corrections.splice(index, 1);
+    }
+
     setObjectX(x) {
         this.objectPos = [x, 50];
     }

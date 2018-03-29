@@ -542,6 +542,12 @@ function init() {
         }
     });
 
+    $('.remove-last-correction-button').addEventListener('click', () => {
+        getCurrentCamera().removeCorrection(state.selectedCorrection);
+        state.selectedCorrection = getCurrentCamera().corrections.length - 1;
+        render();
+    });
+
     setMode(state.mode);
 
     sampleCameras.forEach(([key, val]) => {
