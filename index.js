@@ -32,7 +32,8 @@ const canvas = new fabric.Canvas('stage', {
 const modeButtons = $$('input[name="mode"]');
 const images = $$('.image');
 
-images.forEach(img => {
+$$('.camera-checkbox').forEach(el => el.remove());
+images.forEach(() => {
     $('.checkbox-container').appendChild(createCheckbox());
 });
 
@@ -57,16 +58,9 @@ let state = {
     imageCameraMap: new Map()
 };
 
-const sampleCameras = [
-    [images[0], new Camera(cameraData[0])],
-    [images[1], new Camera(cameraData[1])],
-    [images[2], new Camera(cameraData[2])],
-    [images[3], new Camera(cameraData[3])],
-    [images[4], new Camera(cameraData[4])],
-    [images[5], new Camera(cameraData[5])],
-    [images[6], new Camera(cameraData[6])],
-    [images[7], new Camera(cameraData[7])]
-];
+const sampleCameras = images.map((img, index) => ([
+    img, new Camera(cameraData[index])
+]));
 
 function setMode(newMode) {
     modeButtons.forEach(el => {
@@ -78,23 +72,6 @@ function setMode(newMode) {
     })
 }
 
-function getQuadraticCurve(startPoint, endPoint, controlPoint) {
-    function x(tuple) { return tuple[0];}
-    function y(tuple) { return tuple[1];}
-
-    const relativeEndPoint = [
-        (x(endPoint) - x(startPoint)),
-        (y(endPoint) - y(startPoint))
-    ];
-
-    const relativeControlPoint = [
-        (x(controlPoint) - x(startPoint)),
-        (y(controlPoint) - y(startPoint))
-    ];
-
-    return [...relativeControlPoint, ...relativeEndPoint];
-}
-
 /**
  * @param {number} target
  * @param {number} approx
@@ -103,46 +80,6 @@ function getQuadraticCurve(startPoint, endPoint, controlPoint) {
  */
 function isCloseTo(target, approx, tolerance) {
     return inRange(approx, target - tolerance, target + tolerance);
-}
-
-/**
- * @typedef {Array<number>} Point
- */
-
-/**
- * @param {Point} startPoint
- * @param {Point} endPoint
- * @param {Point} controlPoint
- * returns {[number, number]}
- */
-function quadraticBezierToEasing(startPoint, endPoint, controlPoint) {
-    const absoluteS = startPoint;
-    const absoluteE = endPoint;
-    const absoluteC = controlPoint;
-
-    function x(tuple) { return tuple[0]; }
-    function y(tuple) { return tuple[1]; }
-    function lerp(val, max, min) { return (val - min) / (max - min); }
-
-    const relativeS = [
-        x(absoluteS) - x(absoluteS),
-        y(absoluteS) - y(absoluteS)
-    ];
-    const relativeE = [
-        x(absoluteE) - x(absoluteS),
-        y(absoluteE) - y(absoluteS),
-    ];
-    const relativeC = [
-        x(absoluteC) - x(absoluteS),
-        y(absoluteC) - y(absoluteS),
-    ];
-
-    const lerpedC = [
-        lerp(x(relativeC), x(relativeE), x(relativeS)),
-        lerp(y(relativeC), y(relativeE), y(relativeS))
-    ];
-
-    return lerpedC;
 }
 
 /**
@@ -168,23 +105,7 @@ function drawCameraView(cam, color, isHighlighted) {
         };
     }
 
-    // console.log([
-    //     `M ${xpx(x(cam.viewLeft))} ${ypx(y(cam.viewLeft))}`, // start here
-    //     `Q ${xpx(x(cam.position))}, ${ypx(y(cam.position))}`, // gravity well here
-    //     `${xpx(x(cam.viewRight))}, ${ypx(y(cam.viewRight))}` // finish here
-    // ].join(' '));
-    //
-    // const line = new fabric.Path(
-    //     [
-    //         `M ${xpx(x(cam.viewLeft))} ${ypx(y(cam.viewLeft))}`, // start here
-    //         `Q ${xpx(x(cam.position))}, ${ypx(y(cam.position))}`, // gravity well here
-    //         `${xpx(x(cam.viewRight))}, ${ypx(y(cam.viewRight))}` // finish here
-    //     ].join(' ')
-    //     , { fill: '', stroke: 'black', objectCaching: false });
-
-
     canvas.add(
-        // line,
         new fabric.Line(
             [
                 xpx(x(cam.viewLeft)), ypx(y(cam.viewLeft)),
@@ -415,10 +336,12 @@ function onModeChanged(e) {
  */
 function onImageClicked(e) {
     const img = e.target;
+    console.log(img);
     state.selectedImage = images.indexOf(img);
 
     if (state.mode === 'object') {
         const bounds = img.getBoundingClientRect();
+        console.log(bounds, e);
 
         const clickedPoint = [
             ((e.layerX / bounds.width) * 100),
@@ -450,8 +373,13 @@ function styleImages() {
 
     if (state.mode === 'object') {
 
-        const container = images[state.selectedImage].parentElement;
-        const corrections = state.imageCameraMap.get(images[state.selectedImage]).corrections;
+        const image = images[state.selectedImage];
+        const container = image.parentElement;
+        const corrections = state.imageCameraMap.get(image).corrections;
+
+        // ensure container matches image width since the container's width
+        // is wht the correction x-guys are positioned upon
+        container.style.width = image.getBoundingClientRect().width + 'px';
 
         corrections.forEach(correction => {
             container.appendChild(createXGuy(correction.apparentPosition + '%'))
@@ -498,11 +426,12 @@ function onCanvasClicked(options) {
         ypc(options.e.layerY)
     ];
 
-    if (state.mode === 'camera') {
+    // if (state.mode === 'camera') {
         const target = findClosestCamera(clickedPoint, Array.from(state.imageCameraMap.values()));
 
         if (target) {
             state.selectedImage = getCameraIndex(target);
+            state.selectedCorrection = 0;
         }
 
         // const viewLeft = window.prompt(
@@ -529,9 +458,10 @@ function onCanvasClicked(options) {
         //         : [60, 100],
         //     active: true
         // }));
-    }
+    // }
 
     render();
+
 }
 
 /**
@@ -648,17 +578,3 @@ function syncCursor(e) {
 // -------------------------------------------------------- //
 
 init().then(render);
-    /*
-    .then(() => {
-    const firstCam = state.imageCameraMap.get(images[state.selectedImage]);
-
-    window.xxx = setInterval(() => {
-        if (firstCam.getObjectX() > 99) {
-            firstCam.setObjectX(0);
-            return;
-        }
-        firstCam.setObjectX(firstCam.getObjectX() + 1.5);
-        render();
-    }, 150);
-});
-// */

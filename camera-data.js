@@ -5,34 +5,13 @@ export default [
         viewRight: [18, 100],
         active: true,
         corrections: [
-            {
-                "apparentPosition": 21.09375,
-                "actualPosition": 47.75
-            },
-            {
-                "apparentPosition": 31.8359375,
-                "actualPosition": 62.8
-            },
-            {
-                "apparentPosition": 39.0625,
-                "actualPosition": 67.85
-            },
-            {
-                "apparentPosition": 53.7109375,
-                "actualPosition": 79.55
-            },
-            {
-                "apparentPosition": 68.5546875,
-                "actualPosition": 86.25
-            },
-            {
-                "apparentPosition": 87.890625,
-                "actualPosition": 94.4
-            },
-            {
-                "apparentPosition": 1.7578125,
-                "actualPosition": 3.4
-            }
+            {apparentPosition: 21.01694915254237, actualPosition: 46.3},
+            {apparentPosition: 32.20338983050847, actualPosition: 61.75},
+            {apparentPosition: 54.40677966101695, actualPosition: 80.6},
+            {apparentPosition: 39.49152542372881, actualPosition: 70.3},
+            {apparentPosition: 91.86440677966101, actualPosition: 94.9},
+            {apparentPosition: 9.487666034155598, actualPosition: 27.95},
+            {apparentPosition: 73.62428842504744, actualPosition: 73.62428842504744},
         ]
     },
     {
@@ -41,34 +20,13 @@ export default [
         viewRight: [28, 100],
         active: true,
         corrections: [
-            {
-                "apparentPosition": 49.0234375,
-                "actualPosition": 45.45
-            },
-            {
-                "apparentPosition": 64.2578125,
-                "actualPosition": 56.15
-            },
-            {
-                "apparentPosition": 71.09375,
-                "actualPosition": 59.7
-            },
-            {
-                "apparentPosition": 81.8359375,
-                "actualPosition": 69.75
-            },
-            {
-                "apparentPosition": 89.6484375,
-                "actualPosition": 74.75
-            },
-            {
-                "apparentPosition": 11.9140625,
-                "actualPosition": 22.25
-            },
-            {
-                "apparentPosition": 35.9375,
-                "actualPosition": 41.05
-            }
+            {apparentPosition: 31.499051233396585, actualPosition: 31.499051233396585},
+            {apparentPosition: 48.57685009487666, actualPosition: 45.45},
+            {apparentPosition: 64.13662239089184, actualPosition: 55.95},
+            {apparentPosition: 72.86527514231499, actualPosition: 60.9},
+            {apparentPosition: 11.76470588235294, actualPosition: 11.76470588235294},
+            {apparentPosition: 82.03389830508473, actualPosition: 69.5},
+            {apparentPosition: 92.71186440677967, actualPosition: 77}
         ]
     },
     {
