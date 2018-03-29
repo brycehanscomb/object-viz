@@ -61,13 +61,32 @@ export default [
         position: [49, 40],
         viewLeft: [0, 19],
         viewRight: [66, 24],
-        active: true
+        active: true,
+        corrections: [
+            {"apparentPosition":75.59322033898304,"actualPosition":86},
+            {"apparentPosition":69.49152542372882,"actualPosition":81.4},
+            {"apparentPosition":40,"actualPosition":66.8},
+            {"apparentPosition":32.88135593220339,"actualPosition":62.8},
+            {"apparentPosition":6.271186440677965,"actualPosition":38.25}
+        ]
     },
     {
         position: [48.4, 44.9],
         viewLeft: [100, 100],
         viewRight: [9, 100],
-        active: true
+        active: true,
+        corrections: [
+            {"apparentPosition":52.31388329979879,"actualPosition":55.95},
+            {"apparentPosition":9.25553319919517,"actualPosition":12.5},
+            {"apparentPosition":94.56740442655935,"actualPosition":92.6},
+            {"apparentPosition":72.43460764587525,"actualPosition":73.95},
+            {"apparentPosition":60.56338028169014,"actualPosition":63.6},
+            {"apparentPosition":44.668008048289735,"actualPosition":52.3},
+            {"apparentPosition":20.12072434607646,"actualPosition":30.2},
+            {"apparentPosition":81.28772635814889,"actualPosition":83.7},
+            {"apparentPosition":32.59557344064387,"actualPosition":41.05},
+            {"apparentPosition":2.2132796780684103,"actualPosition":2.2132796780684103}
+        ]
     },
     {
         position: [52.2, 100],
@@ -84,6 +103,16 @@ export default [
         position: [73, 100],
         viewLeft: [0, 20],
         viewRight: [100, 80],
-        active: true
+        active: true,
+        corrections: [
+            {"apparentPosition":82.897384305835,"actualPosition":88.7},
+            {"apparentPosition":59.55734406438632,"actualPosition":77.25},
+            {"apparentPosition":43.66197183098591,"actualPosition":69.3},
+            {"apparentPosition":24.547283702213278,"actualPosition":57},
+            {"apparentPosition":19.114688128772634,"actualPosition":50.45},
+            {"apparentPosition":10.865191146881289,"actualPosition":26.05},
+            {"apparentPosition":2.0120724346076457,"actualPosition":7},
+            {"apparentPosition":28.57142857142857,"actualPosition":59.3}
+        ]
     }
 ];
