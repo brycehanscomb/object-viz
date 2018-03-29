@@ -2,8 +2,6 @@ import { fabric } from 'fabric';
 import { xpc, xpx, ypc, ypx, pc, x, y, $, $$, getAngle, tanDeg } from './measures';
 import { inRange, throttle } from 'lodash';
 import Camera from './camera';
-import BezierEasing from 'bezier-easing';
-import {realAngle} from "./measures.js";
 import cameraData from './camera-data.js';
 
 const floorPlanSource = $('#floorplan');
