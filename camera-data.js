@@ -115,4 +115,8 @@ export default [
             {"apparentPosition":28.57142857142857,"actualPosition":59.3}
         ]
     }
-];
+].map(cam => {
+    // only show one correction / ray
+    // cam.corrections = cam.corrections.slice(0, 1);
+    return cam;
+});

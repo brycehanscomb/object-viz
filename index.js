@@ -52,7 +52,7 @@ function createCheckbox() {
  * @type {{mode: string, selectedImage: number, selectedCorrection: number, imageCameraMap: Map<HTMLImageElement, Camera>}}
  */
 let state = {
-    mode: 'camera',
+    mode: 'object',
     selectedImage: 0,
     selectedCorrection: 0,
     imageCameraMap: new Map()
@@ -423,14 +423,14 @@ function onCanvasClicked(options) {
         ypc(options.e.layerY)
     ];
 
-    // if (state.mode === 'camera') {
+    if (state.mode === 'camera') {
         const target = findClosestCamera(clickedPoint, Array.from(state.imageCameraMap.values()));
 
         if (target) {
             state.selectedImage = getCameraIndex(target);
             state.selectedCorrection = 0;
         }
-
+        //
         // const viewLeft = window.prompt(
         //     'Where is the left boundary (X%, Y%) of this camera\'s view?',
         //     target
@@ -455,7 +455,7 @@ function onCanvasClicked(options) {
         //         : [60, 100],
         //     active: true
         // }));
-    // }
+    }
 
     render();
 
@@ -492,6 +492,8 @@ const render = throttle(() => {
 
     styleImages();
     drawCameras(cams.filter(cam => cam.active));
+
+    $('.slider-value').innerText = getCurrentCamera().corrections[state.selectedCorrection].actualPosition + '%';
 }, 1000 / 24);
 
 function clearStage() {
